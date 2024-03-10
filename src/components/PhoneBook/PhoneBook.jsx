@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addContact } from '../../redux/contactsSlice';
+import { useSelector } from 'react-redux';
+import { selectContacts } from '../../redux/selectors';
+import { getUniqueId } from '../../helpers/helpers';
 
 import css from './PhoneBook.module.scss';
 
-const PhoneBook = ({ onSubmit }) => {
+const PhoneBook = () => {
+  const dispatch = useDispatch();
+  const phones = useSelector(selectContacts);
+  
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
@@ -10,14 +18,24 @@ const PhoneBook = ({ onSubmit }) => {
     return !name || !number;
   };
 
+  const isContactExist = (name) => {
+    return phones.some(
+      (contact) => contact.name.toLowerCase() === name.toLowerCase(),
+    );
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFormEmpty()) {
       alert('All fields must be filled!');
       return;
     }
-
-    onSubmit({ name, phone: number });
+    if (isContactExist(name)) {
+      alert(`${name} is already in contacts`);
+      return;
+    }
+  
+    dispatch(addContact({ name, phone: number, id: getUniqueId()}));
     setName('');
     setNumber('');
   };
